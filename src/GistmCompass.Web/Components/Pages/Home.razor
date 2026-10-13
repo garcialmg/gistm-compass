@@ -1,0 +1,14 @@
+﻿@page "/"
+@inject NavigationManager Nav
+@using GistmCompass.Application.Abstractions
+@inject ICurrentUserAccessor CurrentUser
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (CurrentUser.User is null)
+            Nav.NavigateTo("/login");
+        else
+            Nav.NavigateTo("/instalacoes");
+    }
+}

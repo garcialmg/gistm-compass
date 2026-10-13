@@ -1,0 +1,106 @@
+@page "/cadastro"
+@rendermode InteractiveServer
+@using System.Security.Claims
+@using GistmCompass.Domain.Entities
+@using GistmCompass.Domain.Enums
+@using GistmCompass.Infrastructure.Identity
+@using GistmCompass.Infrastructure.Persistence
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject AppDbContext Db
+@inject NavigationManager Nav
+
+<PageTitle>Criar organização — GISTM Compass</PageTitle>
+
+<div class="auth-panel">
+    <h1>Criar organização</h1>
+    <p class="muted">Cadastre sua empresa e o usuário administrador.</p>
+
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <div class="alert">@Error</div>
+    }
+
+    <EditForm Model="Model" OnValidSubmit="HandleRegister">
+        <div class="field">
+            <label>Nome da organização</label>
+            <InputText @bind-Value="Model.OrgName" class="form-control" />
+        </div>
+        <div class="field">
+            <label>Seu nome</label>
+            <InputText @bind-Value="Model.Name" class="form-control" />
+        </div>
+        <div class="field">
+            <label>Email</label>
+            <InputText @bind-Value="Model.Email" class="form-control" />
+        </div>
+        <div class="field">
+            <label>Senha</label>
+            <InputText type="password" @bind-Value="Model.Password" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary" disabled="@Busy">Criar organização</button>
+    </EditForm>
+    <p class="mt"><a href="login">Já tenho conta</a></p>
+</div>
+
+@code {
+    private RegisterModel Model { get; set; } = new();
+    private string? Error;
+    private bool Busy;
+
+    private async Task HandleRegister()
+    {
+        Busy = true;
+        Error = null;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(Model.OrgName) || string.IsNullOrWhiteSpace(Model.Email) ||
+                string.IsNullOrWhiteSpace(Model.Password) || string.IsNullOrWhiteSpace(Model.Name))
+            {
+                Error = "Preencha todos os campos.";
+                return;
+            }
+            if (await UserManager.FindByEmailAsync(Model.Email.Trim().ToLowerInvariant()) is not null)
+            {
+                Error = "Email já cadastrado.";
+                return;
+            }
+            var org = new Organization { Name = Model.OrgName.Trim() };
+            Db.Organizations.Add(org);
+            await Db.SaveChangesAsync();
+
+            var user = new ApplicationUser
+            {
+                UserName = Model.Email.Trim().ToLowerInvariant(),
+                Email = Model.Email.Trim().ToLowerInvariant(),
+                EmailConfirmed = true,
+                Name = Model.Name.Trim(),
+                Role = UserRole.ADMIN,
+                OrganizationId = org.Id
+            };
+            var result = await UserManager.CreateAsync(user, Model.Password);
+            if (!result.Succeeded)
+            {
+                Error = string.Join("; ", result.Errors.Select(e => e.Description));
+                return;
+            }
+            await SignInManager.SignInWithClaimsAsync(user, true, new[]
+            {
+                new Claim("organizationId", user.OrganizationId),
+                new Claim("orgRole", user.Role.ToString()),
+                new Claim("name", user.Name)
+            });
+            Nav.NavigateTo("/instalacoes", forceLoad: true);
+        }
+        finally { Busy = false; }
+    }
+
+    private sealed class RegisterModel
+    {
+        public string OrgName { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+}

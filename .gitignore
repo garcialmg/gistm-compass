@@ -1,0 +1,31 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+App_Data/
+*.db
+*.db-shm
+*.db-wal
+
+## Secrets / env
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+**/secrets.json
+
+## Node (reference TS)
+reference/gistm-compass/node_modules/
+reference/gistm-compass/.next/
+reference/gistm-compass/uploads/
+reference/gistm-compass/prisma/*.db*
+reference/gistm-compass/scripts/screenshots*/
+
+## OS / IDE
+.DS_Store
+.idea/
+*.log
+tmp-seed/
+tmp-scaffold/

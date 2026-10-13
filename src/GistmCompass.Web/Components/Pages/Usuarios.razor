@@ -1,0 +1,88 @@
+@page "/organizacao/usuarios"
+@rendermode InteractiveServer
+@using GistmCompass.Application.Abstractions
+@using GistmCompass.Domain.Enums
+@using GistmCompass.Infrastructure.Identity
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject ICurrentUserAccessor CurrentUser
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Nav
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Usuários — GISTM Compass</PageTitle>
+
+<h1>Usuários da organização</h1>
+
+@if (CurrentUser.User?.Role != UserRole.ADMIN)
+{
+    <div class="alert">Apenas administradores podem gerenciar usuários.</div>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(Error)) { <div class="alert">@Error</div> }
+
+    <div class="card-form">
+        <h3>Novo usuário</h3>
+        <InputText @bind-Value="Name" class="form-control" placeholder="Nome" />
+        <InputText @bind-Value="Email" class="form-control" placeholder="Email" />
+        <InputText type="password" @bind-Value="Password" class="form-control" placeholder="Senha" />
+        <select @bind="Role">
+            <option value="@UserRole.MEMBER">MEMBER</option>
+            <option value="@UserRole.ADMIN">ADMIN</option>
+        </select>
+        <button class="btn btn-primary" @onclick="Create">Adicionar</button>
+    </div>
+
+    @if (Users is not null)
+    {
+        <table class="table">
+            <thead><tr><th>Nome</th><th>Email</th><th>Papel</th></tr></thead>
+            <tbody>
+            @foreach (var u in Users)
+            {
+                <tr><td>@u.Name</td><td>@u.Email</td><td>@u.Role</td></tr>
+            }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private List<ApplicationUser>? Users;
+    private string Name = "";
+    private string Email = "";
+    private string Password = "";
+    private UserRole Role = UserRole.MEMBER;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CurrentUser.User is null) { Nav.NavigateTo("/login"); return; }
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        var org = CurrentUser.User!.OrganizationId;
+        Users = await UserManager.Users.Where(u => u.OrganizationId == org).OrderBy(u => u.Name).ToListAsync();
+    }
+
+    private async Task Create()
+    {
+        Error = null;
+        var user = new ApplicationUser
+        {
+            UserName = Email.Trim().ToLowerInvariant(),
+            Email = Email.Trim().ToLowerInvariant(),
+            EmailConfirmed = true,
+            Name = Name.Trim(),
+            Role = Role,
+            OrganizationId = CurrentUser.User!.OrganizationId
+        };
+        var result = await UserManager.CreateAsync(user, Password);
+        if (!result.Succeeded) { Error = string.Join("; ", result.Errors.Select(e => e.Description)); return; }
+        Name = Email = Password = "";
+        await Reload();
+    }
+}

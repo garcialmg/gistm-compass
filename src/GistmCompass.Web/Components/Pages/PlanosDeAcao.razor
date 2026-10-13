@@ -1,0 +1,70 @@
+@page "/instalacoes/{InstallationId}/planos-de-acao"
+@rendermode InteractiveServer
+@using GistmCompass.Application.Services
+@using GistmCompass.Domain.Entities
+@using GistmCompass.Domain.Enums
+@inject ActionPlanService Actions
+@inject NavigationManager Nav
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Planos de ação — GISTM Compass</PageTitle>
+
+<div class="page-header">
+    <h1>Planos de ação</h1>
+    <nav class="subnav">
+        <a href="@($"instalacoes/{InstallationId}/dashboard")">Painel</a>
+        <a href="@($"instalacoes/{InstallationId}/documentos")">Documentos</a>
+        <a href="@($"instalacoes/{InstallationId}/requisitos")">Requisitos</a>
+        <a href="@($"instalacoes/{InstallationId}/planos-de-acao")">Planos de ação</a>
+    </nav>
+</div>
+
+@if (Items is null) { <p>Carregando…</p> }
+else if (Items.Count == 0) { <p>Nenhuma ação neste ciclo. Crie a partir de uma avaliação validada.</p> }
+else
+{
+    <table class="table">
+        <thead><tr><th>Descrição</th><th>Responsável</th><th>Prioridade</th><th>Status</th><th>Prazo</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var a in Items)
+        {
+            <tr>
+                <td>@a.Description</td>
+                <td>@a.Responsible</td>
+                <td>@a.Priority</td>
+                <td>@a.Status</td>
+                <td>@(a.DueDate?.ToLocalTime().ToString("dd/MM/yyyy") ?? "—")</td>
+                <td>
+                    @if (a.Status != ActionStatus.CONCLUIDA)
+                    {
+                        <button class="btn btn-sm btn-secondary" @onclick="() => Advance(a)">Avançar status</button>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public string InstallationId { get; set; } = "";
+    private IReadOnlyList<ActionItem>? Items;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try { Items = await Actions.ListAsync(InstallationId); }
+        catch (KeyNotFoundException) { Nav.NavigateTo("/instalacoes"); }
+    }
+
+    private async Task Advance(ActionItem a)
+    {
+        var next = a.Status switch
+        {
+            ActionStatus.ABERTA => ActionStatus.EM_ANDAMENTO,
+            ActionStatus.EM_ANDAMENTO => ActionStatus.CONCLUIDA,
+            _ => ActionStatus.CONCLUIDA
+        };
+        await Actions.UpdateStatusAsync(InstallationId, a.Id, next, "Usuário", null);
+        Items = await Actions.ListAsync(InstallationId);
+    }
+}

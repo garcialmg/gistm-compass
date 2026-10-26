@@ -1,0 +1,113 @@
+@page "/instalacoes/{InstallationId}/dashboard"
+@rendermode InteractiveServer
+@using GistmCompass.Application.Services
+@using GistmCompass.Application.Abstractions
+@inject DashboardService DashboardSvc
+@inject CycleService Cycles
+@inject IInstallationGate Gate
+@inject NavigationManager Nav
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Painel — GISTM Compass</PageTitle>
+
+@if (NotFound)
+{
+    <h1>Não encontramos essa página</h1>
+    <p>A instalação não existe ou não pertence à sua organização.</p>
+}
+else if (Data is null)
+{
+    <p>Carregando painel…</p>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <h1>@Ctx?.Installation.Name</h1>
+            <p class="muted">@Data.CycleName @(Ctx!.IsLatestCycle ? "(ativo)" : "(somente leitura)")</p>
+        </div>
+        <nav class="subnav">
+            <a href="@($"instalacoes/{InstallationId}/dashboard")">Painel</a>
+            <a href="@($"instalacoes/{InstallationId}/documentos")">Documentos</a>
+            <a href="@($"instalacoes/{InstallationId}/requisitos")">Requisitos</a>
+            <a href="@($"instalacoes/{InstallationId}/planos-de-acao")">Planos de ação</a>
+        </nav>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value">@Data.ReadinessScore</div>
+            <div class="stat-label">Índice de Prontidão — @Data.ReadinessLabel</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">@(Data.CompliancePct?.ToString("0") ?? "—")%</div>
+            <div class="stat-label">Atendimento</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">@Data.ValidatedCount / @Data.TotalRequirements</div>
+            <div class="stat-label">Validados</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">@Data.CriticalGaps</div>
+            <div class="stat-label">Gaps críticos</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">@Data.OverdueActions</div>
+            <div class="stat-label">Ações vencidas</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">@Data.PendingAiReview</div>
+            <div class="stat-label">Revisões pendentes</div>
+        </div>
+    </div>
+
+    <h2>Princípios</h2>
+    <table class="table">
+        <thead><tr><th>#</th><th>Princípio</th><th>Validados</th><th>% atendimento</th></tr></thead>
+        <tbody>
+        @foreach (var p in Data.Principles)
+        {
+            <tr>
+                <td>@p.Number</td>
+                <td>@p.Name</td>
+                <td>@p.ValidatedCount</td>
+                <td>@(p.Pct?.ToString("0.0") ?? "—")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    @if (Ctx.IsLatestCycle)
+    {
+        <button class="btn btn-secondary" @onclick="CloseCycle">Encerrar ciclo e iniciar próximo</button>
+        @if (!string.IsNullOrEmpty(Message)) { <p>@Message</p> }
+    }
+}
+
+@code {
+    [Parameter] public string InstallationId { get; set; } = "";
+    private DashboardDto? Data;
+    private InstallationContext? Ctx;
+    private bool NotFound;
+    private string? Message;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            Ctx = await Gate.GetInstallationContextAsync(InstallationId);
+            Data = await DashboardSvc.GetAsync(InstallationId);
+            NotFound = false;
+        }
+        catch (KeyNotFoundException) { NotFound = true; }
+        catch (UnauthorizedAccessException) { Nav.NavigateTo("/login"); }
+    }
+
+    private async Task CloseCycle()
+    {
+        await Cycles.CloseAndStartNextAsync(InstallationId);
+        Message = "Ciclo encerrado. Novo ciclo ativo.";
+        Ctx = await Gate.GetInstallationContextAsync(InstallationId);
+        Data = await DashboardSvc.GetAsync(InstallationId);
+    }
+}

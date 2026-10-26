@@ -1,0 +1,105 @@
+@page "/instalacoes"
+@rendermode InteractiveServer
+@using GistmCompass.Application.Abstractions
+@using GistmCompass.Application.Services
+@using GistmCompass.Domain.Entities
+@using GistmCompass.Domain.Enums
+@inject InstallationService Installations
+@inject ICurrentUserAccessor CurrentUser
+@inject NavigationManager Nav
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Instalações — GISTM Compass</PageTitle>
+
+<h1>Instalações</h1>
+<p class="muted">Estruturas de disposição de rejeitos da sua organização.</p>
+
+@if (!string.IsNullOrEmpty(Error))
+{
+    <div class="alert">@Error</div>
+}
+
+<div class="card-form">
+    <h3>Nova instalação</h3>
+    <EditForm Model="CreateModel" OnValidSubmit="Create">
+        <div class="row-fields">
+            <InputText @bind-Value="CreateModel.Name" class="form-control" placeholder="Nome da estrutura" />
+            <InputText @bind-Value="CreateModel.Location" class="form-control" placeholder="Local (opcional)" />
+            <button type="submit" class="btn btn-primary">Criar instalação</button>
+        </div>
+    </EditForm>
+</div>
+
+@if (Items is null)
+{
+    <p>Carregando…</p>
+}
+else if (Items.Count == 0)
+{
+    <p>Nenhuma instalação ainda. Crie a primeira acima.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr><th>Nome</th><th>Criada em</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var i in Items)
+        {
+            <tr>
+                <td><a href="@($"instalacoes/{i.Id}/dashboard")">@i.Name</a></td>
+                <td>@i.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                <td>
+                    @if (CurrentUser.User?.Role == UserRole.ADMIN)
+                    {
+                        <button class="btn btn-danger btn-sm" @onclick="() => Delete(i.Id)">Remover</button>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<Installation>? Items;
+    private CreateForm CreateModel { get; set; } = new();
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CurrentUser.User is null) { Nav.NavigateTo("/login"); return; }
+        await Reload();
+    }
+
+    private async Task Reload() => Items = await Installations.ListAsync();
+
+    private async Task Create()
+    {
+        Error = null;
+        try
+        {
+            var created = await Installations.CreateAsync(CreateModel.Name, CreateModel.Location);
+            Nav.NavigateTo($"/instalacoes/{created.Id}/dashboard");
+        }
+        catch (Exception ex) { Error = ex.Message; }
+    }
+
+    private async Task Delete(string id)
+    {
+        Error = null;
+        try
+        {
+            await Installations.DeleteAsync(id);
+            await Reload();
+        }
+        catch (Exception ex) { Error = ex.Message; }
+    }
+
+    private sealed class CreateForm
+    {
+        public string Name { get; set; } = "";
+        public string? Location { get; set; }
+    }
+}

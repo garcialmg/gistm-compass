@@ -1,0 +1,39 @@
+﻿@using GistmCompass.Application.Abstractions
+@inject ICurrentUserAccessor CurrentUser
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">GISTM Compass</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        @if (CurrentUser.User is null)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="login">Entrar</NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="cadastro">Criar organização</NavLink>
+            </div>
+        }
+        else
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="instalacoes" Match="NavLinkMatch.All">Instalações</NavLink>
+            </div>
+            @if (CurrentUser.User.Role == Domain.Enums.UserRole.ADMIN)
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="organizacao/usuarios">Usuários</NavLink>
+                </div>
+            }
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="conta">Conta</NavLink>
+            </div>
+        }
+    </nav>
+</div>

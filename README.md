@@ -1,128 +1,85 @@
-# GISTM Compass
+# GISTM Compass (.NET)
 
-Plataforma de gestão da conformidade com o GISTM (*Global Industry Standard on
-Tailings Management*): base de requisitos, gestão documental, avaliação de
-evidências assistida por IA com validação técnica humana, plano de ação, ciclos
-de avaliação e painéis executivo e técnico.
+Plataforma comercial de conformidade GISTM (*Global Industry Standard on Tailings Management*): catálogo oficial (77 requisitos), gestão documental, avaliação assistida por IA com validação humana, planos de ação, ciclos e painéis.
 
-Produto da **MGLS**.
+**Produto:** solução ASP.NET Core 8 (API + Worker + Blazor).  
+**Referência de comportamento:** `reference/gistm-compass` (TypeScript/Next.js, somente leitura operacional).
 
-## Visão geral
+## Solução
 
-A plataforma organiza a conformidade de estruturas de disposição de rejeitos
-em torno dos 77 requisitos do GISTM. Para cada estrutura, a equipe reúne a base
-documental, avalia requisito a requisito com apoio de IA, registra o plano de
-ação e acompanha a evolução por ciclos — com trilha de auditoria e relatórios
-prontos para diretoria e auditores. A decisão final é sempre do revisor
-técnico; a IA acelera a leitura, não substitui o julgamento.
+| Projeto | Função |
+|---------|--------|
+| `src/GistmCompass.Domain` | Entidades, enums, prontidão/maturidade, simulador IA |
+| `src/GistmCompass.Application` | Casos de uso (instalações, docs, avaliações, ações, ciclos) |
+| `src/GistmCompass.Infrastructure` | EF Core, Identity, Blob, fila, extração, Anthropic, seed |
+| `src/GistmCompass.Api` | REST + cookies Identity + `/health` |
+| `src/GistmCompass.Worker` | Jobs de extração de texto e avaliação IA |
+| `src/GistmCompass.Web` | UI Blazor Interactive Server (PT) |
+| `tests/GistmCompass.Tests` | Regras de domínio + isolamento multi-tenant |
 
-## Principais recursos
+## Pré-requisitos
 
-- **Base de requisitos GISTM** — 6 tópicos, 15 princípios e 77 requisitos com o
-  texto oficial do Padrão em português e inglês, com alternância PT/EN.
-- **Avaliação por requisito** — classificação, robustez da evidência,
-  criticidade do gap e suficiência de informação, com validação humana
-  obrigatória, histórico estruturado de decisões, trilha de auditoria e
-  biblioteca de justificativas reutilizáveis.
-- **Leitura assistida por IA** — um agente consulta a base documental da
-  estrutura por completo (localiza, lê os documentos na íntegra, cruza
-  informações e cita as fontes) para sugerir a avaliação e responder perguntas
-  no assistente. Uma heurística determinística serve de fallback.
-- **Gestão documental** — upload com metadados (tipo, versão, validade,
-  confidencialidade, público), versionamento, importação de pasta, busca por
-  conteúdo e extração de texto de `.pdf`, `.docx`, `.xlsx`, `.txt` e `.md`.
-- **Plano de ação** — quadro por status com prioridade, prazo, dependência
-  entre ações, evidência de encerramento e histórico de progresso.
-- **Ciclos de avaliação** — encerramento de ciclo, modo somente-leitura e
-  comparação de evolução entre ciclos.
-- **Painéis** — executivo e técnico, Bússola GISTM com Índice de Prontidão para
-  Auditoria, comparação entre instalações e relatório imprimível (resumido ou
-  completo), além do pacote de divulgação pública.
-- **Multi-tenant** — cada organização só enxerga as próprias estruturas; papéis
-  ADMIN/MEMBER e proteção contra força bruta no login.
+- .NET 8 SDK
+- (Opcional) SQL Server / Azure SQL — padrão local é **SQLite**
+- (Opcional) Azure Storage (Blob + Queue)
+- (Opcional) `Anthropic:ApiKey`
 
-## Stack
-
-- **Next.js 16** (App Router) + **TypeScript** + **Tailwind CSS** — front-end e
-  back-end no mesmo projeto, com Server Actions nas mutações.
-- **Prisma** + **SQLite** em desenvolvimento (para produção, trocar o provider
-  para PostgreSQL e apontar `DATABASE_URL`).
-- **NextAuth (Auth.js v5)** — autenticação por credenciais e multi-tenant.
-- **Anthropic API** — camada de IA agêntica (`src/lib/ai-agent.ts`).
-
-## Executando localmente
-
-Pré-requisitos: Node.js 20+.
+## Configuração
 
 ```bash
-npm install
-cp .env.example .env      # preencha DATABASE_URL, AUTH_SECRET e ANTHROPIC_API_KEY
-npx prisma generate
-npm run dev
+cp .env.example .env   # ou edite appsettings.Development.json
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000). Para explorar com dados
-fictícios, use o login de demonstração `demo@gistmcompass.com` / `demo12345`
-(criado pelo seed). Para começar do zero como um novo cliente, use "Criar
-organização" na tela de login.
+Pontos principais em `appsettings.json` / env:
 
-O recurso de IA (assistente e leitura por requisito) exige uma
-`ANTHROPIC_API_KEY` válida; o restante da plataforma funciona sem ela.
+- `Database:Provider` = `Sqlite` | `SqlServer`
+- `ConnectionStrings:Default`
+- `Storage:Provider` = `Local` | `Azure` (`Storage:LocalRoot` = `App_Data/uploads`)
+- `Queue:Provider` = `InMemory` | `Azure`
+- `Anthropic:ApiKey` (vazio → heurística determinística)
+- `AzureAd:*` (SSO Entra — ativado só se `ClientId` estiver preenchido)
 
-### Dados de demonstração
+Sem segredos reais no repositório.
 
-O banco de desenvolvimento já vem com o conteúdo oficial do GISTM e três
-estruturas de exemplo. Para redefinir ao estado limpo:
+## Executar localmente (offline)
+
+Três terminais (ou rode só Web para a UI completa in-process):
 
 ```bash
-npx prisma db seed
+# API (porta livre)
+dotnet run --project src/GistmCompass.Api --urls http://127.0.0.1:5188
+
+# Worker (consome fila in-memory/arquivo compartilhada se apontar o mesmo App_Data)
+dotnet run --project src/GistmCompass.Worker
+
+# Blazor UI
+dotnet run --project src/GistmCompass.Web --urls http://127.0.0.1:5199
 ```
 
-> Pare o servidor (`npm run dev`) antes de rodar o seed — duas escritas
-> simultâneas no SQLite corrompem o banco no Windows.
+Demo seed: `demo@gistmcompass.com` / `demo12345`  
+Ou use **Criar organização** na tela de login.
 
-Para um cenário mais rico (estruturas em diferentes estágios de maturidade):
+A UI Blazor carrega Application/Infrastructure in-process (mesmo banco configurado). A API expõe os mesmos fluxos para testes/integrações.
+
+## Testes
 
 ```bash
-npx tsx scripts/seed-test-documents.mjs
-npx tsx scripts/seed-demo-story.mjs
+dotnet build
+dotnet test
 ```
 
-## Conteúdo oficial do GISTM
+## Seed GISTM
 
-`prisma/gistm-content.ts` é a fonte única do texto oficial (PT/EN), transcrito
-dos PDFs do Padrão e consumido por `prisma/seed.ts`. Alguns requisitos (3.4,
-5.6, 5.8, 10.7 e 15.1) reúnem mais de um parágrafo do original; a
-correspondência foi conferida cruzando as citações internas do próprio Padrão.
-Para atualizar (ex.: uma revisão do GISTM), edite esse arquivo e rode o seed
-novamente.
+Conteúdo oficial em `src/GistmCompass.Infrastructure/Seed/gistm-content.json` (exportado de `prisma/gistm-content.ts`). Cópia em docs do Agent Store.
 
-## Arquitetura e segurança
+## Isolamento (Fase 0 no reference)
 
-- **Isolamento entre organizações** — toda página e Server Action escopada por
-  estrutura passa por `getInstallationContext` / `assertInstallationOwnership`
-  (`src/lib/context.ts`), que exige sessão válida e confirma a propriedade;
-  acesso cruzado retorna 404.
-- **Validação humana** — a sugestão da IA nunca vira avaliação definitiva sem
-  confirmação de um revisor; cada decisão gera snapshot e trilha de auditoria.
-- **IA ancorada nos documentos** — o agente responde apenas com base no
-  conteúdo da base documental e cita as fontes; quando não encontra, diz
-  explicitamente em vez de inventar.
+Patches em `reference/gistm-compass`:
 
-## Qualidade
+- `JustificationTemplate` com `organizationId`
+- Regeneração de IA apaga evidências só da instalação corrente
+- `deleteInstallation` remove `ExternalAnalysis` + arquivos em disco
 
-Scripts de verificação ponta-a-ponta (Playwright) em `scripts/smoke-test-*.mjs`
-cobrem autenticação e isolamento entre organizações, avaliação, documentos,
-plano de ação, ciclos, painéis, i18n e o assistente. Executam contra o
-servidor local.
+## Arquitetura
 
-## Status e próximos passos
-
-Para operação como produto em produção, estão previstos:
-
-- Hospedagem em nuvem e migração de SQLite para **PostgreSQL** gerenciado.
-- Armazenamento de arquivos em **object storage** (hoje em disco local).
-- Autenticação corporativa (**SSO/AD**), verificação e convite por e-mail.
-- Rotina de **backup** e monitoramento.
-- Adequação à **LGPD** para o tratamento de dados dos clientes.
-"# gistm-compass" 
+Ver Agent Store: `docs/arquitetura-comercial.md` e checklist `docs/aceitacao-paridade.md`.

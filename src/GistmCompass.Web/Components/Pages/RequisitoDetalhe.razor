@@ -1,0 +1,212 @@
+@page "/instalacoes/{InstallationId}/requisitos/{RequirementId}"
+@rendermode InteractiveServer
+@using GistmCompass.Application.Abstractions
+@using GistmCompass.Application.Services
+@using GistmCompass.Domain.Entities
+@using GistmCompass.Domain.Enums
+@using GistmCompass.Domain.Services
+@using GistmCompass.Infrastructure.Persistence
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+@inject IInstallationGate Gate
+@inject AssessmentService Assessments
+@inject NavigationManager Nav
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Requisito — GISTM Compass</PageTitle>
+
+@if (Requirement is null || Assessment is null)
+{
+    <p>Carregando…</p>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <h1>@Requirement.Code</h1>
+            <p>@Requirement.Title</p>
+        </div>
+        <a href="@($"instalacoes/{InstallationId}/requisitos")">← Requisitos</a>
+    </div>
+
+    <section class="block">
+        <h2>Descrição oficial</h2>
+        <p>@Requirement.Description</p>
+    </section>
+
+    <section class="block">
+        <h2>Sugestão da IA</h2>
+        @if (Assessment.AiClassification is null)
+        {
+            <p class="muted">Ainda sem sugestão.</p>
+        }
+        else
+        {
+            <p><strong>@AiSimulator.ClassificationLabel(Assessment.AiClassification)</strong>
+               — confiança @(Assessment.AiConfidence is null ? "—" : $"{Assessment.AiConfidence:P0}")</p>
+            <p>@Assessment.AiJustification</p>
+        }
+        @if (IsLatest)
+        {
+            <button class="btn btn-secondary" @onclick="RunAi" disabled="@Busy">Gerar sugestão (heurística)</button>
+        }
+    </section>
+
+    <section class="block">
+        <h2>Validação humana</h2>
+        <p class="muted">A sugestão da IA nunca vira decisão final sem revisão.</p>
+        @if (!string.IsNullOrEmpty(Error)) { <div class="alert">@Error</div> }
+        @if (!string.IsNullOrEmpty(Info)) { <p class="ok">@Info</p> }
+
+        <div class="field">
+            <label>Classificação final</label>
+            <select @bind="FinalClassification">
+                @foreach (FinalClassification v in Enum.GetValues<FinalClassification>())
+                {
+                    <option value="@v">@AiSimulator.ClassificationLabel(v)</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <label>Robustez</label>
+            <select @bind="FinalRobustness">
+                @foreach (EvidenceRobustness v in Enum.GetValues<EvidenceRobustness>())
+                {
+                    <option value="@v">@v</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <label>Criticidade</label>
+            <select @bind="FinalCriticality">
+                @foreach (GapCriticality v in Enum.GetValues<GapCriticality>())
+                {
+                    <option value="@v">@v</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <label>Suficiência de informação</label>
+            <select @bind="FinalInfoSufficiency">
+                @foreach (InfoSufficiency v in Enum.GetValues<InfoSufficiency>())
+                {
+                    <option value="@v">@v</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <label>Justificativa técnica</label>
+            <textarea class="form-control" rows="5" @bind="FinalJustification"></textarea>
+        </div>
+        <div class="field">
+            <label>Revisor</label>
+            <InputText @bind-Value="ReviewedBy" class="form-control" />
+        </div>
+        <label><input type="checkbox" @bind="SaveAsTemplate" /> Salvar como modelo da organização</label>
+        @if (IsLatest)
+        {
+            <button class="btn btn-primary" @onclick="Validate" disabled="@Busy">Validar avaliação</button>
+        }
+        else
+        {
+            <p class="muted">Ciclo encerrado — somente leitura.</p>
+        }
+    </section>
+
+    <section class="block">
+        <h2>Comentários</h2>
+        <InputText @bind-Value="CommentAuthor" class="form-control" placeholder="Autor" />
+        <textarea class="form-control" @bind="CommentText" rows="2"></textarea>
+        <button class="btn btn-secondary" @onclick="AddComment">Comentar</button>
+        <ul>
+            @foreach (var c in Assessment.Comments.OrderByDescending(c => c.CreatedAt))
+            {
+                <li><strong>@c.Author</strong>: @c.Text <span class="muted">@c.CreatedAt.ToLocalTime()</span></li>
+            }
+        </ul>
+    </section>
+}
+
+@code {
+    [Parameter] public string InstallationId { get; set; } = "";
+    [Parameter] public string RequirementId { get; set; } = "";
+
+    private Requirement? Requirement;
+    private Assessment? Assessment;
+    private bool IsLatest;
+    private bool Busy;
+    private string? Error;
+    private string? Info;
+
+    private FinalClassification FinalClassification = FinalClassification.NAO_ATENDE;
+    private EvidenceRobustness FinalRobustness = EvidenceRobustness.AUSENTE;
+    private GapCriticality FinalCriticality = GapCriticality.ALTA;
+    private InfoSufficiency FinalInfoSufficiency = InfoSufficiency.INSUFICIENTE;
+    private string FinalJustification = "";
+    private string ReviewedBy = "Revisor técnico";
+    private bool SaveAsTemplate;
+    private string CommentAuthor = "";
+    private string CommentText = "";
+
+    protected override async Task OnParametersSetAsync() => await Load();
+
+    private async Task Load()
+    {
+        try
+        {
+            var ctx = await Gate.GetInstallationContextAsync(InstallationId);
+            IsLatest = ctx.IsLatestCycle;
+            Requirement = await Db.Requirements.FirstOrDefaultAsync(r => r.Id == RequirementId);
+            if (Requirement is null) { Nav.NavigateTo($"/instalacoes/{InstallationId}/requisitos"); return; }
+            Assessment = await Assessments.GetOrCreateAsync(RequirementId, InstallationId, ctx.Cycle.Id);
+            Assessment = await Db.Assessments.Include(a => a.Comments).Include(a => a.Revisions)
+                .FirstAsync(a => a.Id == Assessment.Id);
+
+            if (Assessment.FinalClassification is not null) FinalClassification = Assessment.FinalClassification.Value;
+            else if (Assessment.AiClassification is not null) FinalClassification = Assessment.AiClassification.Value;
+            if (Assessment.FinalRobustness is not null) FinalRobustness = Assessment.FinalRobustness.Value;
+            else if (Assessment.AiRobustness is not null) FinalRobustness = Assessment.AiRobustness.Value;
+            if (Assessment.FinalCriticality is not null) FinalCriticality = Assessment.FinalCriticality.Value;
+            else if (Assessment.AiCriticality is not null) FinalCriticality = Assessment.AiCriticality.Value;
+            if (Assessment.FinalInfoSufficiency is not null) FinalInfoSufficiency = Assessment.FinalInfoSufficiency.Value;
+            else if (Assessment.AiInfoSufficiency is not null) FinalInfoSufficiency = Assessment.AiInfoSufficiency.Value;
+            FinalJustification = Assessment.FinalJustification ?? Assessment.AiJustification ?? "";
+        }
+        catch (KeyNotFoundException) { Nav.NavigateTo("/instalacoes"); }
+    }
+
+    private async Task RunAi()
+    {
+        Busy = true; Error = null;
+        try
+        {
+            await Assessments.ApplyAiSuggestionAsync(InstallationId, RequirementId, useRealAi: false);
+            Info = "Sugestão gerada. Confirme com um revisor técnico.";
+            await Load();
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { Busy = false; }
+    }
+
+    private async Task Validate()
+    {
+        Busy = true; Error = null;
+        try
+        {
+            await Assessments.ValidateAsync(InstallationId, Assessment!.Id, RequirementId, Requirement!.ThemeId,
+                FinalClassification, FinalRobustness, FinalCriticality, FinalInfoSufficiency,
+                FinalJustification, ReviewedBy, SaveAsTemplate, null);
+            Info = "Avaliação validada.";
+            await Load();
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { Busy = false; }
+    }
+
+    private async Task AddComment()
+    {
+        await Assessments.AddCommentAsync(InstallationId, Assessment!.Id, CommentAuthor, CommentText);
+        CommentText = "";
+        await Load();
+    }
+}

@@ -1,0 +1,94 @@
+@page "/instalacoes/{InstallationId}/documentos"
+@rendermode InteractiveServer
+@using GistmCompass.Application.Services
+@using GistmCompass.Domain.Entities
+@using Microsoft.AspNetCore.Components.Forms
+@inject DocumentService Documents
+@inject NavigationManager Nav
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Documentos — GISTM Compass</PageTitle>
+
+<div class="page-header">
+    <h1>Documentos</h1>
+    <nav class="subnav">
+        <a href="@($"instalacoes/{InstallationId}/dashboard")">Painel</a>
+        <a href="@($"instalacoes/{InstallationId}/documentos")">Documentos</a>
+        <a href="@($"instalacoes/{InstallationId}/requisitos")">Requisitos</a>
+        <a href="@($"instalacoes/{InstallationId}/planos-de-acao")">Planos de ação</a>
+    </nav>
+</div>
+
+@if (!string.IsNullOrEmpty(Error)) { <div class="alert">@Error</div> }
+@if (!string.IsNullOrEmpty(Info)) { <p class="ok">@Info</p> }
+
+<div class="card-form">
+    <h3>Enviar documento</h3>
+    <InputFile OnChange="OnFile" />
+    <InputText @bind-Value="Title" class="form-control" placeholder="Título" />
+    <InputText @bind-Value="Type" class="form-control" placeholder="Tipo" />
+    <button class="btn btn-primary" @onclick="Upload" disabled="@(File is null || Busy)">Enviar</button>
+</div>
+
+@if (Items is null) { <p>Carregando…</p> }
+else if (Items.Count == 0) { <p>Nenhum documento nesta instalação.</p> }
+else
+{
+    <table class="table">
+        <thead><tr><th>Título</th><th>Arquivo</th><th>Extração</th><th>Enviado</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var d in Items)
+        {
+            <tr>
+                <td>@d.Title</td>
+                <td>@d.FileName</td>
+                <td>@d.TextExtractionStatus</td>
+                <td>@d.UploadedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td><button class="btn btn-sm btn-danger" @onclick="() => Delete(d.Id)">Excluir</button></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public string InstallationId { get; set; } = "";
+    private IReadOnlyList<DocumentFile>? Items;
+    private IBrowserFile? File;
+    private string Title = "";
+    private string Type = "Documento";
+    private string? Error;
+    private string? Info;
+    private bool Busy;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try { Items = await Documents.ListAsync(InstallationId); }
+        catch (KeyNotFoundException) { Nav.NavigateTo("/instalacoes"); }
+    }
+
+    private void OnFile(InputFileChangeEventArgs e) => File = e.File;
+
+    private async Task Upload()
+    {
+        if (File is null) return;
+        Busy = true; Error = null; Info = null;
+        try
+        {
+            await using var stream = File.OpenReadStream(52 * 1024 * 1024);
+            await Documents.UploadAsync(InstallationId, string.IsNullOrWhiteSpace(Title) ? File.Name : Title,
+                Type, null, null, "INTERNO", null, null, null, File.Name, File.ContentType, stream);
+            Info = "Documento enviado. Extração enfileirada.";
+            Title = "";
+            Items = await Documents.ListAsync(InstallationId);
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { Busy = false; }
+    }
+
+    private async Task Delete(string id)
+    {
+        await Documents.DeleteAsync(InstallationId, id);
+        Items = await Documents.ListAsync(InstallationId);
+    }
+}

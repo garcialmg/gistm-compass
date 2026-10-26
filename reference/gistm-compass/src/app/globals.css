@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════
+   GISTM COMPASS — sistema visual "Petróleo"
+
+   Direção: azul-petróleo profundo sobre neutros minerais frios.
+   O registro é geotécnico (rocha, sedimento, testemunho de sondagem),
+   não software corporativo genérico.
+
+   Duas regras que governam todo o resto:
+
+   1. A cor mais saturada da tela é sempre um STATUS, nunca a marca.
+      Num painel de conformidade, o que deve puxar o olho é o gap
+      crítico — não o botão primário, que aparece em toda tela.
+
+   2. Todo par texto/fundo passa em WCAG AA (4.5:1). A paleta anterior
+      reprovava justamente no badge mais importante da plataforma:
+      o verde "atende totalmente" tinha 3.35:1 sobre branco.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ---- Marca: petróleo ------------------------------------------ */
+  --color-brand-50:  #eef6f7;
+  --color-brand-100: #d5e8ec;
+  --color-brand-200: #abd0d8;
+  --color-brand-300: #74b0bd;
+  --color-brand-400: #3d8a9c;
+  --color-brand-500: #0a5566;   /* base — 8.39:1 em branco */
+  --color-brand-600: #084657;
+  --color-brand-700: #083f4d;
+  --color-brand-800: #0a3540;   /* shell (menu lateral) */
+  --color-brand-900: #072730;
+
+  /* ---- Neutros minerais -----------------------------------------
+     Cinza com viés levemente frio/esverdeado, derivado da marca.
+     Um cinza puro leria como "não escolhido". */
+  --color-mineral-50:  #f3f6f6;
+  --color-mineral-100: #e7ecec;
+  --color-mineral-200: #d3dbdc;
+  --color-mineral-300: #b3bfc1;
+  --color-mineral-400: #8a9497;   /* 3.10:1 — só bordas/ícones decorativos */
+  --color-mineral-500: #677275;   /* 4.95:1 — menor tamanho para texto */
+  --color-mineral-600: #525c5e;
+  --color-mineral-700: #3d4749;   /* 9.56:1 — texto secundário */
+  --color-mineral-800: #282f31;
+  --color-mineral-900: #161c1d;   /* 17.24:1 — texto principal */
+
+  /* ---- Status ----------------------------------------------------
+     Separados da marca por 105° de matiz: impossível confundir um
+     botão com um sinal de conformidade. */
+  --color-state-ok:        #3f6212;
+  --color-state-ok-soft:   #eef3e6;
+  --color-state-ok-line:   #d5e2c2;
+
+  --color-state-warn:      #8f4e0b;
+  --color-state-warn-soft: #fbf1e3;
+  --color-state-warn-line: #ecdcbe;
+
+  --color-state-bad:       #a52a2a;
+  --color-state-bad-soft:  #fbeceb;
+  --color-state-bad-line:  #eecfcd;
+
+  --color-state-none:      #677275;
+  --color-state-none-soft: #f0f3f3;
+  --color-state-none-line: #d3dbdc;
+
+  /* ---- Tipografia ------------------------------------------------
+     Escala fixa. Antes havia seis tamanhos ad-hoc sem relação entre
+     si; aqui cada degrau tem uma função declarada. */
+  --text-micro:   0.6875rem;  /* rótulos em caixa alta, códigos    */
+  --text-small:   0.8125rem;  /* metadados, legendas               */
+  --text-body:    0.9375rem;  /* corpo, células de tabela          */
+  --text-lead:    1.0625rem;  /* texto de destaque                 */
+  --text-title:   1.25rem;    /* título de cartão                  */
+  --text-page:    1.5rem;     /* título de página                  */
+  --text-figure:  2rem;       /* números grandes de indicador      */
+
+  --font-display: var(--font-display-src), Georgia, serif;
+  --font-sans:    var(--font-body-src), system-ui, sans-serif;
+  --font-mono:    var(--font-data-src), ui-monospace, monospace;
+
+  /* ---- Elevação ---------------------------------------------------
+     Sombras muito contidas: a separação entre superfícies vem da
+     borda e do fundo mineral, não de sombra pesada. */
+  --shadow-card:  0 1px 2px 0 rgb(10 53 64 / 0.05);
+  --shadow-float: 0 4px 16px -2px rgb(10 53 64 / 0.12), 0 2px 4px -2px rgb(10 53 64 / 0.06);
+}
+
+@theme inline {
+  --color-background: var(--color-mineral-50);
+  --color-surface:    #ffffff;
+}
+
+/* A plataforma é desenhada em tema claro: todo cartão é branco com
+   texto escuro fixo. Declarar a intenção evita que o navegador
+   auto-escureça campos de formulário para quem usa o sistema em modo
+   escuro — antes, esse público via o cabeçalho quase invisível. */
+:root {
+  color-scheme: light;
+  --content-max: 1400px;
+}
+
+body {
+  background: var(--color-mineral-50);
+  color: var(--color-mineral-900);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Só h1/h2 usam a serifada. h3 costuma ser rótulo de seção, e uma
+   serifada em caixa alta num rótulo longo vira um bloco ilegível que
+   grita mais alto que o conteúdo que ele agrupa. */
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.011em;
+}
+h3 { font-weight: 600; }
+
+/* Dígitos alinhados em qualquer lugar que eles empilhem em coluna. */
+table, .tabular { font-variant-numeric: tabular-nums; }
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+@layer components {
+  /* Faixa de conteúdo: mantém cabeçalho e corpo na mesma coluna. */
+  .content-shell {
+    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+    max-width: var(--content-max);
+  }
+
+  .input {
+    @apply block w-full rounded-md border border-mineral-300 bg-white px-3 py-2 text-mineral-900 shadow-none
+           placeholder:text-mineral-400
+           focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+    font-size: var(--text-body);
+  }
+
+  /* No Tailwind 4 não se pode `@apply` uma classe do próprio projeto, então
+     a base é repetida em cada variante em vez de composta. */
+  .btn, .btn-primary, .btn-secondary, .btn-quiet {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3.5 py-2 font-medium transition-colors;
+    font-size: var(--text-small);
+  }
+  .btn-primary   { @apply bg-brand-500 text-white hover:bg-brand-700; }
+  .btn-secondary { @apply border border-mineral-300 bg-white text-mineral-700 hover:bg-mineral-50 hover:text-mineral-900; }
+  .btn-quiet     { @apply text-brand-500 hover:bg-brand-50; }
+
+  /* Rótulo em caixa alta — usado para eyebrows e cabeçalhos de tabela.
+     Caixa alta sem entreletra fecha demais e vira bloco ilegível. */
+  .label-caps {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    @apply font-medium text-mineral-500;
+  }
+}
+
+@media print {
+  .content-shell { max-width: none; padding: 0; }
+  body { background: #fff; }
+}

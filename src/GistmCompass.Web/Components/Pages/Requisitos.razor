@@ -1,0 +1,67 @@
+@page "/instalacoes/{InstallationId}/requisitos"
+@rendermode InteractiveServer
+@using GistmCompass.Application.Abstractions
+@using GistmCompass.Domain.Enums
+@using GistmCompass.Infrastructure.Persistence
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+@inject IInstallationGate Gate
+@inject NavigationManager Nav
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Requisitos — GISTM Compass</PageTitle>
+
+<div class="page-header">
+    <h1>Requisitos GISTM</h1>
+    <nav class="subnav">
+        <a href="@($"instalacoes/{InstallationId}/dashboard")">Painel</a>
+        <a href="@($"instalacoes/{InstallationId}/documentos")">Documentos</a>
+        <a href="@($"instalacoes/{InstallationId}/requisitos")">Requisitos</a>
+        <a href="@($"instalacoes/{InstallationId}/planos-de-acao")">Planos de ação</a>
+    </nav>
+</div>
+
+@if (Rows is null) { <p>Carregando…</p> }
+else
+{
+    <table class="table">
+        <thead><tr><th>Código</th><th>Título</th><th>Status</th><th>Final</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var r in Rows)
+        {
+            <tr>
+                <td>@r.Code</td>
+                <td>@r.Title</td>
+                <td>@(r.Status?.ToString() ?? "—")</td>
+                <td>@(r.FinalClassification?.ToString() ?? r.AiClassification?.ToString() ?? "—")</td>
+                <td><a href="@($"instalacoes/{InstallationId}/requisitos/{r.Id}")">Abrir</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public string InstallationId { get; set; } = "";
+    private List<ReqRow>? Rows;
+
+    private sealed record ReqRow(string Id, string Code, string Title, ReviewStatus? Status, FinalClassification? FinalClassification, FinalClassification? AiClassification);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            var ctx = await Gate.GetInstallationContextAsync(InstallationId);
+            var reqs = await Db.Requirements.OrderBy(r => r.Code).ToListAsync();
+            var assessments = await Db.Assessments
+                .Where(a => a.InstallationId == InstallationId && a.CycleId == ctx.Cycle.Id)
+                .ToDictionaryAsync(a => a.RequirementId);
+            Rows = reqs.Select(r =>
+            {
+                assessments.TryGetValue(r.Id, out var a);
+                return new ReqRow(r.Id, r.Code, r.Title, a?.Status, a?.FinalClassification, a?.AiClassification);
+            }).ToList();
+        }
+        catch (KeyNotFoundException) { Nav.NavigateTo("/instalacoes"); }
+    }
+}

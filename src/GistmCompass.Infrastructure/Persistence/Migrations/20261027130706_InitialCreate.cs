@@ -15,10 +15,10 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -29,25 +29,25 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    Role = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    OrganizationId = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "TEXT", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "TEXT", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    OrganizationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,16 +58,16 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "BackgroundJobs",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Type = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    PayloadJson = table.Column<string>(type: "TEXT", nullable: false),
-                    Error = table.Column<string>(type: "TEXT", nullable: true),
-                    OrganizationId = table.Column<string>(type: "TEXT", nullable: true),
-                    InstallationId = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    PayloadJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Error = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrganizationId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InstallationId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,9 +78,9 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "Organizations",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,10 +91,10 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "Principles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Number = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    NameEn = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Number = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NameEn = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -105,11 +105,11 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RoleId = table.Column<string>(type: "TEXT", nullable: false),
-                    ClaimType = table.Column<string>(type: "TEXT", nullable: true),
-                    ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -126,11 +126,11 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    ClaimType = table.Column<string>(type: "TEXT", nullable: true),
-                    ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -147,10 +147,10 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
-                    ProviderKey = table.Column<string>(type: "TEXT", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "TEXT", nullable: true),
-                    UserId = table.Column<string>(type: "TEXT", nullable: false)
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -167,8 +167,8 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    RoleId = table.Column<string>(type: "TEXT", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -191,10 +191,10 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Value = table.Column<string>(type: "TEXT", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -211,12 +211,12 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AppUser",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Role = table.Column<int>(type: "INTEGER", nullable: false),
-                    OrganizationId = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<int>(type: "int", nullable: false),
+                    OrganizationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -233,10 +233,10 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "Installations",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    OrganizationId = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrganizationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -253,11 +253,11 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "Themes",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Number = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    NameEn = table.Column<string>(type: "TEXT", nullable: true),
-                    PrincipleId = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Number = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NameEn = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PrincipleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -274,11 +274,11 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "Cycles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    InstallationId = table.Column<string>(type: "TEXT", nullable: false),
-                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ClosedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    InstallationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ClosedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -295,25 +295,25 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "Documents",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Type = table.Column<string>(type: "TEXT", nullable: false),
-                    Version = table.Column<string>(type: "TEXT", nullable: true),
-                    AreaResponsible = table.Column<string>(type: "TEXT", nullable: true),
-                    Confidentiality = table.Column<string>(type: "TEXT", nullable: false),
-                    ValidUntil = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    FileName = table.Column<string>(type: "TEXT", nullable: false),
-                    StorageKey = table.Column<string>(type: "TEXT", nullable: false),
-                    MimeType = table.Column<string>(type: "TEXT", nullable: false),
-                    ExtractedText = table.Column<string>(type: "TEXT", nullable: true),
-                    InstallationId = table.Column<string>(type: "TEXT", nullable: false),
-                    UploadedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    TargetAudience = table.Column<string>(type: "TEXT", nullable: true),
-                    DisclosureApproved = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DisclosureApprovedBy = table.Column<string>(type: "TEXT", nullable: true),
-                    DisclosureApprovedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    PreviousVersionId = table.Column<string>(type: "TEXT", nullable: true),
-                    TextExtractionStatus = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Version = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AreaResponsible = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Confidentiality = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ValidUntil = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StorageKey = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExtractedText = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InstallationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TargetAudience = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DisclosureApproved = table.Column<bool>(type: "bit", nullable: false),
+                    DisclosureApprovedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DisclosureApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PreviousVersionId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    TextExtractionStatus = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -336,13 +336,13 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "JustificationTemplates",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    ThemeId = table.Column<string>(type: "TEXT", nullable: false),
-                    OrganizationId = table.Column<string>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Text = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ThemeId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OrganizationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -358,22 +358,22 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                         column: x => x.ThemeId,
                         principalTable: "Themes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Requirements",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Code = table.Column<string>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    TitleEn = table.Column<string>(type: "TEXT", nullable: true),
-                    DescriptionEn = table.Column<string>(type: "TEXT", nullable: true),
-                    ExpectedEvidence = table.Column<string>(type: "TEXT", nullable: true),
-                    ExpectedEvidenceEn = table.Column<string>(type: "TEXT", nullable: true),
-                    ThemeId = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TitleEn = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DescriptionEn = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpectedEvidence = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpectedEvidenceEn = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ThemeId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -390,27 +390,27 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "Assessments",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    RequirementId = table.Column<string>(type: "TEXT", nullable: false),
-                    InstallationId = table.Column<string>(type: "TEXT", nullable: false),
-                    CycleId = table.Column<string>(type: "TEXT", nullable: false),
-                    AiClassification = table.Column<string>(type: "TEXT", maxLength: 64, nullable: true),
-                    AiRobustness = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
-                    AiCriticality = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
-                    AiInfoSufficiency = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
-                    AiJustification = table.Column<string>(type: "TEXT", nullable: true),
-                    AiConfidence = table.Column<double>(type: "REAL", nullable: true),
-                    FinalClassification = table.Column<string>(type: "TEXT", maxLength: 64, nullable: true),
-                    FinalRobustness = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
-                    FinalCriticality = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
-                    FinalInfoSufficiency = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
-                    FinalJustification = table.Column<string>(type: "TEXT", nullable: true),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    ReviewedBy = table.Column<string>(type: "TEXT", nullable: true),
-                    ReviewedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    AiJobStatus = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RequirementId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    InstallationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CycleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AiClassification = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    AiRobustness = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    AiCriticality = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    AiInfoSufficiency = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    AiJustification = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AiConfidence = table.Column<double>(type: "float", nullable: true),
+                    FinalClassification = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    FinalRobustness = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    FinalCriticality = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    FinalInfoSufficiency = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    FinalJustification = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    ReviewedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AiJobStatus = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -426,25 +426,25 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                         column: x => x.InstallationId,
                         principalTable: "Installations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Assessments_Requirements_RequirementId",
                         column: x => x.RequirementId,
                         principalTable: "Requirements",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Evidences",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    DocumentId = table.Column<string>(type: "TEXT", nullable: false),
-                    RequirementId = table.Column<string>(type: "TEXT", nullable: false),
-                    Excerpt = table.Column<string>(type: "TEXT", nullable: false),
-                    AiGenerated = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DocumentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RequirementId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Excerpt = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AiGenerated = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -460,20 +460,20 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                         column: x => x.RequirementId,
                         principalTable: "Requirements",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ExternalAnalyses",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    InstallationId = table.Column<string>(type: "TEXT", nullable: false),
-                    RequirementId = table.Column<string>(type: "TEXT", nullable: false),
-                    Source = table.Column<string>(type: "TEXT", nullable: false),
-                    Content = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    InstallationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RequirementId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Source = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -489,25 +489,25 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                         column: x => x.RequirementId,
                         principalTable: "Requirements",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Actions",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    AssessmentId = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Responsible = table.Column<string>(type: "TEXT", nullable: false),
-                    Area = table.Column<string>(type: "TEXT", nullable: true),
-                    DueDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Priority = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    ClosureEvidence = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DependsOnId = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AssessmentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Responsible = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Area = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Priority = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    ClosureEvidence = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DependsOnId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -530,16 +530,16 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AssessmentRevisions",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    AssessmentId = table.Column<string>(type: "TEXT", nullable: false),
-                    Version = table.Column<int>(type: "INTEGER", nullable: false),
-                    FinalClassification = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    FinalRobustness = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    FinalCriticality = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    FinalInfoSufficiency = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    FinalJustification = table.Column<string>(type: "TEXT", nullable: false),
-                    ReviewedBy = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AssessmentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    FinalClassification = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    FinalRobustness = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    FinalCriticality = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    FinalInfoSufficiency = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    FinalJustification = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReviewedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -556,12 +556,12 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "AuditLogs",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    AssessmentId = table.Column<string>(type: "TEXT", nullable: false),
-                    Actor = table.Column<string>(type: "TEXT", nullable: false),
-                    Action = table.Column<string>(type: "TEXT", nullable: false),
-                    Note = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AssessmentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Actor = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -578,11 +578,11 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "Comments",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    AssessmentId = table.Column<string>(type: "TEXT", nullable: false),
-                    Author = table.Column<string>(type: "TEXT", nullable: false),
-                    Text = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AssessmentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -599,11 +599,11 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "ActionComments",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    ActionId = table.Column<string>(type: "TEXT", nullable: false),
-                    Author = table.Column<string>(type: "TEXT", nullable: false),
-                    Text = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ActionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -620,12 +620,12 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "ActionLogs",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    ActionId = table.Column<string>(type: "TEXT", nullable: false),
-                    Actor = table.Column<string>(type: "TEXT", nullable: false),
-                    Event = table.Column<string>(type: "TEXT", nullable: false),
-                    Note = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ActionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Actor = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Event = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -672,7 +672,8 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -703,7 +704,8 @@ namespace GistmCompass.Infrastructure.Persistence.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AssessmentRevisions_AssessmentId_Version",

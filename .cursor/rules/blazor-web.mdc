@@ -1,0 +1,15 @@
+---
+description: Padrões da UI Blazor Interactive Server (GistmCompass.Web)
+globs: src/GistmCompass.Web/**/*.{cs,razor}
+alwaysApply: false
+---
+
+# Blazor Web
+
+- Interactive Server; páginas em `Components/Pages/` (rotas PT: Instalacoes, Documentos, Requisitos, PlanosDeAcao, Dashboard, Usuarios, Conta, Login, Cadastro).
+- Autenticação: cookie Identity + `CascadingAuthenticationState`; usuário atual via `CascadingCurrentUserAccessor` (`ICurrentUserAccessor`).
+- A Web carrega Application/Infrastructure **in-process** (mesmo banco da config) — chame serviços Application diretamente; não reimplemente regra na página.
+- Ciclo encerrado / sem ownership: trate como na Application (mensagens PT; recurso ausente ≈ não encontrado).
+- Manter layout e navegação existentes (`MainLayout`, `NavMenu`); UI em português.
+- Uploads e mutações: validar no serviço (`DocumentService`, etc.), não só na UI.
+- Não migrar para WASM ou BFF separado sem demanda explícita.

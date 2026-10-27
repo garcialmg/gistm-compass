@@ -93,17 +93,23 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>, IAppDbContext
         builder.Entity<Evidence>(e =>
         {
             e.HasKey(x => x.Id);
-            e.HasOne(x => x.Document).WithMany(d => d.Evidences).HasForeignKey(x => x.DocumentId);
-            e.HasOne(x => x.Requirement).WithMany(r => r.Evidences).HasForeignKey(x => x.RequirementId);
+            e.HasOne(x => x.Document).WithMany(d => d.Evidences).HasForeignKey(x => x.DocumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Requirement).WithMany(r => r.Evidences).HasForeignKey(x => x.RequirementId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<Assessment>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.RequirementId, x.InstallationId, x.CycleId }).IsUnique();
-            e.HasOne(x => x.Requirement).WithMany(r => r.Assessments).HasForeignKey(x => x.RequirementId);
-            e.HasOne(x => x.Installation).WithMany(i => i.Assessments).HasForeignKey(x => x.InstallationId);
-            e.HasOne(x => x.Cycle).WithMany(c => c.Assessments).HasForeignKey(x => x.CycleId);
+            // SQL Server não permite múltiplos caminhos CASCADE (ex.: Assessment→Installation e Assessment→Cycle→Installation).
+            e.HasOne(x => x.Requirement).WithMany(r => r.Assessments).HasForeignKey(x => x.RequirementId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Installation).WithMany(i => i.Assessments).HasForeignKey(x => x.InstallationId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Cycle).WithMany(c => c.Assessments).HasForeignKey(x => x.CycleId)
+                .OnDelete(DeleteBehavior.Cascade);
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
             e.Property(x => x.AiClassification).HasConversion<string>().HasMaxLength(64);
             e.Property(x => x.AiRobustness).HasConversion<string>().HasMaxLength(32);
@@ -165,16 +171,20 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>, IAppDbContext
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.InstallationId, x.RequirementId, x.Source }).IsUnique();
-            e.HasOne(x => x.Installation).WithMany(i => i.ExternalAnalyses).HasForeignKey(x => x.InstallationId);
-            e.HasOne(x => x.Requirement).WithMany(r => r.ExternalAnalyses).HasForeignKey(x => x.RequirementId);
+            e.HasOne(x => x.Installation).WithMany(i => i.ExternalAnalyses).HasForeignKey(x => x.InstallationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Requirement).WithMany(r => r.ExternalAnalyses).HasForeignKey(x => x.RequirementId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<JustificationTemplate>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.OrganizationId);
-            e.HasOne(x => x.Theme).WithMany(t => t.JustificationTemplates).HasForeignKey(x => x.ThemeId);
-            e.HasOne(x => x.Organization).WithMany(o => o.JustificationTemplates).HasForeignKey(x => x.OrganizationId);
+            e.HasOne(x => x.Theme).WithMany(t => t.JustificationTemplates).HasForeignKey(x => x.ThemeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Organization).WithMany(o => o.JustificationTemplates).HasForeignKey(x => x.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<BackgroundJob>(e =>

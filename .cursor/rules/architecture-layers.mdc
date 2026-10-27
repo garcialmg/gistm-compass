@@ -1,0 +1,38 @@
+---
+description: Dependências entre camadas Clean Architecture e onde colocar código novo
+globs: src/**/*.cs
+alwaysApply: false
+---
+
+# Arquitetura em camadas
+
+## Onde colocar o quê
+
+| Mudança | Projeto |
+|---------|---------|
+| Entidade, enum, fórmula pura | `GistmCompass.Domain` |
+| Caso de uso, DTO de app, interface de porta | `GistmCompass.Application` |
+| EF, Identity, Blob, Queue, Anthropic, seed | `GistmCompass.Infrastructure` |
+| HTTP REST | `GistmCompass.Api` |
+| UI Blazor | `GistmCompass.Web` |
+| Consumo de fila | `GistmCompass.Worker` |
+
+## Regras de dependência
+
+- `Domain` **não** referencia Application, Infrastructure, AspNetCore, EF.
+- `Application` referencia só `Domain` + abstrações próprias (`IAppDbContext`, `IObjectStorage`, …).
+- `Infrastructure` implementa portas e registra DI em `DependencyInjection.AddGistmInfrastructure`.
+- Hosts (`Api`/`Web`/`Worker`) compõem DI; não embutir regra de negócio em `Program.cs` ou endpoints além de orquestração HTTP.
+
+## Portas existentes (estender, não duplicar)
+
+- `IObjectStorage`, `IJobQueue`, `ITextExtractionService`, `IAiAssessmentService`
+- `ICurrentUserAccessor`, `IInstallationGate`, `IAppDbContext`
+
+Providers via config: `Database:Provider`, `Storage:Provider`, `Queue:Provider`.
+
+## Novo caso de uso
+
+1. Método no serviço Application adequado (ou serviço novo se o bounded context for claro).
+2. Sempre passar pelo gate de ownership quando houver `installationId`.
+3. Expor via endpoint Api **e**/ou página Blazor conforme o fluxo já existente — manter paridade de capacidades entre hosts quando fizer sentido.

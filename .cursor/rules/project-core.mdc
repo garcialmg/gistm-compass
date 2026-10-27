@@ -1,0 +1,32 @@
+---
+description: Contexto do produto GISTM Compass .NET, mandato de conversão e restrição de regras de negócio
+alwaysApply: true
+---
+
+# GISTM Compass — núcleo do projeto
+
+Produto de conformidade GISTM (77 requisitos): documentos → avaliação IA assistida → validação humana → planos de ação → ciclos → painéis.
+
+## Mandato
+
+- Conversão do protótipo `reference/gistm-compass` (Next.js) para ASP.NET Core 8 multi-tenant + nuvem Microsoft.
+- **Não altere regras de negócio ou funcionais** sem demanda explícita do usuário. Arquitetura, camadas, Azure e DX podem evoluir; comportamento funcional deve manter paridade com a referência.
+- `reference/` é só leitura operacional para o agente (conferência de comportamento).
+
+## Camadas (resumo)
+
+`Domain` ← `Application` ← `Infrastructure` ← hosts (`Api`, `Web`, `Worker`).
+
+Casos de uso em `Application/Services/*`; persistência/adapters em `Infrastructure`; UI em `Web` (Blazor Server); jobs em `Worker`.
+
+## Antes de mudar código
+
+1. Identifique se a mudança é arquitetural/infra ou regra funcional.
+2. Se for funcional, localize o equivalente na referência ou no serviço Application atual e preserve a regra.
+3. Após mudanças: `dotnet build` e, se tocar tenant/domínio, `dotnet test`.
+
+## Estilo
+
+- UI e mensagens ao usuário em **português**.
+- Comentários no código só quando o "porquê" não for óbvio; preferir português.
+- Não inventar features além do que já existe no .NET sem pedido explícito.

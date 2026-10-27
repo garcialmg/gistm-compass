@@ -1,0 +1,13 @@
+---
+description: Processamento assíncrono no Worker (extração e IA)
+globs: src/GistmCompass.Worker/**/*.cs
+alwaysApply: false
+---
+
+# Worker
+
+- Consome `IJobQueue`; processa `JobType.TextExtraction`, `AiAssessment`, `AiAssessmentBatch`.
+- Antes de chamar Application: setar `ICurrentUserAccessor` com `OrganizationId` do `BackgroundJob` (padrão em `JobProcessor`).
+- Atualizar `BackgroundJob.Status` (PENDING → RUNNING → DONE/FAILED) e timestamps; erros em `Error`.
+- Reutilizar `AssessmentService` / `ITextExtractionService` — não duplicar lógica de avaliação no Worker.
+- Em dev, Api/Web/Worker precisam apontar para o mesmo DB (e storage/fila coerentes) para jobs aparecerem.

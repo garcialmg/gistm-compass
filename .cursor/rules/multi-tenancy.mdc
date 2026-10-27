@@ -1,0 +1,37 @@
+---
+description: Isolamento multi-tenant, ownership e padrões de auth
+alwaysApply: true
+---
+
+# Multi-tenancy e segurança
+
+## Gate obrigatório
+
+Todo fluxo ligado a instalação/documento/avaliação:
+
+```csharp
+await _gate.AssertOwnershipAsync(installationId, ct);
+// ou
+var ctx = await _gate.GetInstallationContextAsync(installationId, cycleId, ct);
+```
+
+- Instalação inexistente **ou** de outra org → `KeyNotFoundException` → API/UI respondem **404** (não 403).
+- Confirme `document.InstallationId` / `assessment.InstallationId` antes de ler/escrever.
+- Listagens sempre filtram por `user.OrganizationId`.
+
+## Ownership em dados org-scoped
+
+- `JustificationTemplate.OrganizationId` — nunca template global entre tenants.
+- Jobs (`BackgroundJob`) carregam `OrganizationId`; o Worker seta `ICurrentUserAccessor` com essa org antes de processar.
+- Storage key: `org/{organizationId}/installation/{installationId}/{documentId}/{guid}{ext}` — GUID no nome do arquivo.
+
+## Auth
+
+- `ICurrentUserAccessor` → `CurrentUser` (UserId, Email, Name, OrganizationId, Role).
+- Roles: `ADMIN` | `MEMBER` (ex.: só ADMIN remove instalação).
+- Identity lockout: 5 tentativas. Cookie: `GistmCompass.Auth`.
+- Download: sessão + ownership; falha de ownership = 404.
+
+## Uploads
+
+Allow-list em `DocumentService` (pdf, docx, xlsx, txt, md, doc, xls, png, jpg, jpeg). Não gravar no storage sem validar no serviço.

@@ -1,11 +1,7 @@
 @page "/conta"
 @rendermode InteractiveServer
 @using GistmCompass.Application.Abstractions
-@using GistmCompass.Infrastructure.Identity
-@using Microsoft.AspNetCore.Identity
 @inject ICurrentUserAccessor CurrentUser
-@inject SignInManager<ApplicationUser> SignInManager
-@inject NavigationManager Nav
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Conta — GISTM Compass</PageTitle>
@@ -20,13 +16,7 @@ else
 {
     <p><strong>@CurrentUser.User.Name</strong> (@CurrentUser.User.Email)</p>
     <p>Papel: @CurrentUser.User.Role</p>
-    <button class="btn btn-secondary" @onclick="Logout">Sair</button>
-}
-
-@code {
-    private async Task Logout()
-    {
-        await SignInManager.SignOutAsync();
-        Nav.NavigateTo("/login", forceLoad: true);
-    }
+    <form method="post" action="/account/logout" data-enhance="false">
+        <button type="submit" class="btn btn-secondary">Sair</button>
+    </form>
 }

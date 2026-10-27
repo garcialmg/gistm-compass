@@ -1,0 +1,25 @@
+---
+description: Convenções C# / ASP.NET Core 8 do repositório
+globs: "**/*.{cs,csproj}"
+alwaysApply: false
+---
+
+# Convenções .NET 8
+
+- Target: `net8.0`. Preferir minimal APIs no `Api` (`MapGistmEndpoints`) e Blazor Interactive Server no `Web`.
+- IDs de entidade: `string` GUID `"N"` (`Guid.NewGuid().ToString("N")`), alinhado ao protótipo.
+- Datas em UTC (`DateTime.UtcNow`).
+- Exceções de app: `UnauthorizedAccessException`, `KeyNotFoundException` (404 tenant), `InvalidOperationException` (validação de regra).
+- DI: registrar adapters e services em `Infrastructure/DependencyInjection.cs`; accessors de usuário nos hosts.
+- EF: `AppDbContext` + migrations em `Infrastructure/Persistence`; não criar segundo DbContext sem necessidade.
+- JSON: evitar ciclos (`ReferenceHandler.IgnoreCycles` na API).
+- Testes em `tests/GistmCompass.Tests` (xUnit); isolamento tenant via `WebApplicationFactory` na API.
+- Segredos: `appsettings` / user-secrets / env — nunca commitar chaves reais; ver `.env.example`.
+
+```csharp
+// ❌ BAD — regra de negócio no endpoint
+app.MapPost("/api/...", async (AppDbContext db) => { /* lógica de avaliação */ });
+
+// ✅ GOOD — endpoint delega ao Application
+app.MapPost("/api/...", async (AssessmentService svc) => await svc.ValidateAsync(...));
+```

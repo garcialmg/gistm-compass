@@ -1,0 +1,34 @@
+---
+description: Paridade funcional com a referência e regras de domínio que não podem mudar sem demanda
+alwaysApply: true
+---
+
+# Paridade de regras de negócio
+
+Fonte de verdade comportamental: implementação atual em `Application`/`Domain` alinhada a `reference/gistm-compass`. Em conflito, preserve o comportamento documentado abaixo até o usuário pedir mudança.
+
+## Avaliação e IA
+
+- Campos `Ai*` são sugestão; `Final*` + `ReviewStatus.VALIDADO` só após revisor humano.
+- `ValidateAsync` exige justificativa técnica não vazia; gera `AuditLog` + `AssessmentRevision`.
+- IA/mutações só no **ciclo mais recente** (`IsLatestCycle`); ciclo encerrado = somente leitura.
+- Ao regenerar sugestão IA: apagar evidências `AiGenerated` **somente** dos documentos da instalação corrente.
+- Sem `Anthropic:ApiKey` → heurística (`AiSimulator` / `HeuristicAiAssessmentService`), mesmo contrato.
+
+## Domínio portado (não “otimizar”)
+
+- `ReadinessScore.Compute` / `Label` — port de `readiness-score.ts`.
+- `Maturity.Label` — port de `maturity.ts`.
+- Catálogo GISTM: seed de `gistm-content.json` (77 requisitos); não reescrever textos oficiais.
+
+## Ciclos, ações, exclusão
+
+- Nova instalação cria ciclo `Ciclo {ano}.1`.
+- Plano de ação e dashboard escopados por instalação + ownership.
+- `DeleteAsync` (instalação): ADMIN only; remove assessments, actions, docs, ExternalAnalyses e tenta apagar blobs.
+
+## O que NÃO fazer sem pedido
+
+- Mudar enums de classificação/status, pesos do índice de prontidão, ou fluxo de validação.
+- Tornar sugestão IA automaticamente “final”.
+- Compartilhar templates/justificativas entre organizações.

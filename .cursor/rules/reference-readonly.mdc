@@ -1,0 +1,14 @@
+---
+description: Como usar o protótipo reference/gistm-compass sem alterá-lo como produto
+globs: reference/**/*
+alwaysApply: false
+---
+
+# Referência Next.js (somente comportamento)
+
+`reference/gistm-compass` é o protótipo Claude/Next.js usado para **paridade funcional**.
+
+- Não trate mudanças no reference como entrega do produto .NET.
+- Ao portar comportamento: leia `actions.ts`, `src/lib/context.ts`, `readiness-score.ts`, `maturity.ts`, seed GISTM — e implemente em Domain/Application.
+- Stack do reference (Next 16, Prisma, NextAuth, Tailwind) **não** é a stack alvo; ignore AGENTS/CLAUDE do reference para implementação .NET.
+- Exceções históricas já portadas: `JustificationTemplate.organizationId`, delete com ExternalAnalysis + arquivos, evidências IA só da instalação.

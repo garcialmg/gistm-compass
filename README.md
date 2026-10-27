@@ -82,4 +82,4 @@ Patches em `reference/gistm-compass`:
 
 ## Arquitetura
 
-Ver Agent Store: `docs/arquitetura-comercial.md` e checklist `docs/aceitacao-paridade.md`.
+Contexto para agentes e padrões do repositório: [`AGENTS.md`](AGENTS.md) e [`.cursor/rules/`](.cursor/rules/).

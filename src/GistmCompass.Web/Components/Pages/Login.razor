@@ -1,10 +1,5 @@
 @page "/login"
-@rendermode InteractiveServer
-@using System.Security.Claims
-@using GistmCompass.Infrastructure.Identity
-@using Microsoft.AspNetCore.Identity
-@inject UserManager<ApplicationUser> UserManager
-@inject SignInManager<ApplicationUser> SignInManager
+@using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager Nav
 
 <PageTitle>Entrar — GISTM Compass</PageTitle>
@@ -18,65 +13,29 @@
         <div class="alert">@Error</div>
     }
 
-    <EditForm Model="Model" OnValidSubmit="HandleLogin">
+    <form method="post" action="/account/login" data-enhance="false">
         <div class="field">
             <label>Email</label>
-            <InputText @bind-Value="Model.Email" class="form-control" />
+            <input name="email" type="email" class="form-control" required autocomplete="username" />
         </div>
         <div class="field">
             <label>Senha</label>
-            <InputText type="password" @bind-Value="Model.Password" class="form-control" />
+            <input name="password" type="password" class="form-control" required autocomplete="current-password" />
         </div>
-        <button type="submit" class="btn btn-primary" disabled="@Busy">Entrar</button>
-    </EditForm>
+        <button type="submit" class="btn btn-primary">Entrar</button>
+    </form>
 
     <p class="mt">Não tem conta? <a href="cadastro">Criar organização</a></p>
     <p class="muted small">Demo: demo@gistmcompass.com / demo12345</p>
 </div>
 
 @code {
-    private LoginModel Model { get; set; } = new();
     private string? Error;
-    private bool Busy;
 
-    private async Task HandleLogin()
+    protected override void OnInitialized()
     {
-        Busy = true;
-        Error = null;
-        try
-        {
-            var user = await UserManager.FindByEmailAsync(Model.Email.Trim().ToLowerInvariant());
-            if (user is null)
-            {
-                Error = "Email ou senha incorretos.";
-                return;
-            }
-            var result = await SignInManager.CheckPasswordSignInAsync(user, Model.Password, lockoutOnFailure: true);
-            if (result.IsLockedOut)
-            {
-                Error = "Conta temporariamente bloqueada. Tente novamente em 15 minutos.";
-                return;
-            }
-            if (!result.Succeeded)
-            {
-                Error = "Email ou senha incorretos.";
-                return;
-            }
-            var extra = new List<Claim>
-            {
-                new("organizationId", user.OrganizationId),
-                new("orgRole", user.Role.ToString()),
-                new("name", user.Name)
-            };
-            await SignInManager.SignInWithClaimsAsync(user, true, extra);
-            Nav.NavigateTo("/instalacoes", forceLoad: true);
-        }
-        finally { Busy = false; }
-    }
-
-    private sealed class LoginModel
-    {
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("error", out var err))
+            Error = err.ToString();
     }
 }

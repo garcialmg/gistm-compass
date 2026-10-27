@@ -24,9 +24,8 @@ public static class GistmContentSeeder
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("GistmContentSeeder");
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        // Prefer migrations when present; fall back to EnsureCreated for blank SQLite demos.
-        try { await db.Database.MigrateAsync(ct); }
-        catch { await db.Database.EnsureCreatedAsync(ct); }
+        // Schema via EF migrations (geradas para SQL Server; compatíveis com SQLite).
+        await db.Database.MigrateAsync(ct);
 
         if (!await db.Principles.AnyAsync(ct))
         {

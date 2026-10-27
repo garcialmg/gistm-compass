@@ -1,6 +1,7 @@
 using GistmCompass.Application.Abstractions;
 using GistmCompass.Infrastructure;
 using GistmCompass.Infrastructure.Seed;
+using GistmCompass.Web;
 using GistmCompass.Web.Components;
 using GistmCompass.Web.Services;
 using Microsoft.AspNetCore.Identity;
@@ -55,6 +56,8 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapAccountEndpoints();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
